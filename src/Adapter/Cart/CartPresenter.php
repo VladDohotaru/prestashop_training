@@ -283,6 +283,8 @@ class CartPresenter implements PresenterInterface
         $subtotals = array();
 
         $productsTotalExcludingTax = $cart->getOrderTotal(false, Cart::ONLY_PRODUCTS);
+        $totalWeight = $cart->getTotalWeight();
+        $totalVolume = $cart->getTotalVolume();
         $total_excluding_tax = $cart->getOrderTotal(false);
         $total_including_tax = $cart->getOrderTotal(true);
         $total_discount = $cart->getDiscountSubtotalWithoutGifts();
@@ -351,6 +353,8 @@ class CartPresenter implements PresenterInterface
         $totals = array(
             'total' => array(
                 'type' => 'total',
+                'total_weight' => $totalWeight,
+                'total_volume' => $totalVolume,
                 'label' => $this->translator->trans('Total', array(), 'Shop.Theme.Checkout'),
                 'amount' => $this->includeTaxes() ? $total_including_tax : $total_excluding_tax,
                 'value' => $this->priceFormatter->format(
@@ -377,8 +381,7 @@ class CartPresenter implements PresenterInterface
 
         $summary_string = $products_count === 1 ?
             $this->translator->trans('1 item', array(), 'Shop.Theme.Checkout') :
-            $this->translator->trans('%count% items', array('%count%' => $products_count), 'Shop.Theme.Checkout')
-        ;
+            $this->translator->trans('%count% items', array('%count%' => $products_count), 'Shop.Theme.Checkout');
 
         $minimalPurchase = $this->priceFormatter->convertAmount((float) Configuration::get('PS_PURCHASE_MINIMUM'));
 
@@ -416,6 +419,8 @@ class CartPresenter implements PresenterInterface
             'subtotals' => $subtotals,
             'products_count' => $products_count,
             'summary_string' => $summary_string,
+            'total_weight' => $totalWeight,
+            'total_volume' => $totalVolume,
             'labels' => $labels,
             'id_address_delivery' => $cart->id_address_delivery,
             'id_address_invoice' => $cart->id_address_invoice,

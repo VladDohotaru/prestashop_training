@@ -43,6 +43,15 @@
         </div>
       {/if}
     {/foreach}
+      <div class="cart-summary-line" id="cart-subtotal-shipping">
+        <span class="label">Total Weight</span>
+        <span class="value">{$cart.total_weight|string_format:"%.2f"} {Configuration::get('PS_WEIGHT_UNIT')}</span>
+    </div>
+    <div class="cart-summary-line" id="cart-subtotal-shipping">
+        <span class="label">Total Volume</span>
+        <span class="value">{$cart.total_volume} {Configuration::get('PS_VOLUME_UNIT')}</span>
+    </div>
+  </div>
   </div>
 
   {block name='cart_voucher'}

@@ -99,6 +99,7 @@ class CartCore extends ObjectModel
 
     protected $_products = null;
     protected static $_totalWeight = array();
+    protected static $_totalVolume = array();
     protected $_taxCalculationMethod = PS_TAX_EXC;
     protected static $_carriers = null;
     protected static $_taxes_rate = null;
@@ -226,6 +227,7 @@ class CartCore extends ObjectModel
         static::$_nbProducts      = array();
         static::$_isVirtualCart   = array();
         static::$_totalWeight     = array();
+        static::$_totalVolume     = array();
         static::$_carriers        = null;
         static::$_taxes_rate      = null;
         static::$_attributesLists = array();
@@ -287,6 +289,10 @@ class CartCore extends ObjectModel
 
         if (isset(self::$_totalWeight[$this->id])) {
             unset(self::$_totalWeight[$this->id]);
+        }
+
+        if (isset(self::$_totalVolume[$this->id])) {
+          unset(self::$_totalVolume[$this->id]);
         }
 
         $this->_products = null;
@@ -1316,6 +1322,10 @@ class CartCore extends ObjectModel
             unset(self::$_totalWeight[$this->id]);
         }
 
+        if (isset(self::$_totalVolume[$this->id])) {
+          unset(self::$_totalVolume[$this->id]);
+        }
+
         $data = array(
             'cart' => $this,
             'product' => $product,
@@ -1616,6 +1626,10 @@ class CartCore extends ObjectModel
 
         if (isset(self::$_totalWeight[$this->id])) {
             unset(self::$_totalWeight[$this->id]);
+        }
+
+        if (isset(self::$_totalVolume[$this->id])) {
+          unset(self::$_totalVolume[$this->id]);
         }
 
         if ((int)$id_customization) {
@@ -3562,23 +3576,44 @@ class CartCore extends ObjectModel
      */
     public function getTotalWeight($products = null)
     {
-        if (!is_null($products)) {
-            $total_weight = 0;
-            foreach ($products as $product) {
-                if (!isset($product['weight_attribute']) || is_null($product['weight_attribute'])) {
-                    $total_weight += $product['weight'] * $product['cart_quantity'];
-                } else {
-                    $total_weight += $product['weight_attribute'] * $product['cart_quantity'];
-                }
-            }
-            return $total_weight;
+      if (!is_null($products)) {
+        $total_weight = 0;
+        foreach ($products as $product) {
+          if (!isset($product['weight_attribute']) || is_null($product['weight_attribute'])) {
+            $total_weight += $product['weight'] * $product['cart_quantity'];
+          } else {
+            $total_weight += $product['weight_attribute'] * $product['cart_quantity'];
+          }
         }
+        return $total_weight;
+      }
 
-        if (!isset(self::$_totalWeight[$this->id])) {
-            $this->updateProductWeight($this->id);
-        }
+      if (!isset(self::$_totalWeight[$this->id])) {
+        $this->updateProductWeight($this->id);
+      }
 
-        return self::$_totalWeight[$this->id];
+      return self::$_totalWeight[$this->id];
+    }
+
+        /**
+     * Return total Cart volume
+     *
+     * @return float Total Cart volume
+     */
+    public function getTotalVolume($products = null)
+    {
+      // if (!is_null($products)) {
+        $total_weight = 0;
+      foreach ($this->getProducts() as $product) {
+        $total_volume += ($product['depth'] * $product['height'] * $product['width']) * $product['cart_quantity'] ;
+      // }
+      return $total_volume;
+    }
+      // if (!isset(self::$_totalVolume[$this->id])) {
+        // $this->updateProductVolume($this->id);
+      // }
+// return self::$_totalVolume[6];
+      // return self::$_totalVolume[$this->id];
     }
 
     /**
@@ -3620,6 +3655,46 @@ class CartCore extends ObjectModel
             6
         );
     }
+
+        /**
+     * @param int $productId
+     */
+    // protected function updateProductVolume($productId)
+    // {
+    //     $productId = (int) $productId;
+
+    //     if (Combination::isFeatureActive()) {
+    //         $volume_product_with_attribute = Db::getInstance()->getValue('
+    //             SELECT SUM((p.`volume` + pa.`volume`) * cp.`quantity`) as nb
+    //             FROM `' . _DB_PREFIX_ . 'cart_product` cp
+    //             LEFT JOIN `' . _DB_PREFIX_ . 'product` p ON (cp.`id_product` = p.`id_product`)
+    //             LEFT JOIN `' . _DB_PREFIX_ . 'product_attribute` pa
+    //             ON (cp.`id_product_attribute` = pa.`id_product_attribute`)
+    //             WHERE (cp.`id_product_attribute` IS NOT NULL AND cp.`id_product_attribute` != 0)
+    //             AND cp.`id_cart` = ' . $productId);
+    //     } else {
+    //         $volume_product_with_attribute = 0;
+    //     }
+
+    //     $volume_product_without_attribute = Db::getInstance()->getValue('
+    //         SELECT SUM(p.`volume` * cp.`quantity`) as nb
+    //         FROM `' . _DB_PREFIX_ . 'cart_product` cp
+    //         LEFT JOIN `' . _DB_PREFIX_ . 'product` p ON (cp.`id_product` = p.`id_product`)
+    //         WHERE (cp.`id_product_attribute` IS NULL OR cp.`id_product_attribute` = 0)
+    //         AND cp.`id_cart` = ' . $productId);
+
+    //     $volume_cart_customizations = Db::getInstance()->getValue('
+    //         SELECT SUM(cd.`volume` * c.`quantity`) FROM `' . _DB_PREFIX_ . 'customization` c
+    //         LEFT JOIN `' . _DB_PREFIX_ . 'customized_data` cd ON (c.`id_customization` = cd.`id_customization`)
+    //         WHERE c.`in_cart` = 1 AND c.`id_cart` = ' . $productId);
+
+    //     self::$_totalvolume[$productId] = round(
+    //         (float)$volume_product_with_attribute +
+    //         (float)$volume_product_without_attribute +
+    //         (float)$volume_cart_customizations,
+    //         6
+    //     );
+    // }
 
     /**
      * @deprecated 1.5.0
